@@ -179,26 +179,7 @@ namespace AngleSharp.Dom
             }
         }
 
-        internal Node NextSibling
-        {
-            get
-            {
-                if (_parent != null)
-                {
-                    var n = _parent._children.Length - 1;
-
-                    for (var i = 0; i < n; i++)
-                    {
-                        if (Object.ReferenceEquals(_parent._children[i], this))
-                        {
-                            return _parent._children[i + 1];
-                        }
-                    }
-                }
-
-                return null;
-            }
-        }
+        internal Node NextSibling { get; set; }
 
         internal Node FirstChild
         {
@@ -506,13 +487,26 @@ namespace AngleSharp.Dom
         public void InsertNode(Int32 index, Node node)
         {
             node.Parent = this;
+            if (index > 0)
+            {
+                _children[index - 1].NextSibling = node;
+            }
             _children.Insert(index, node);
+
+            for (int i = index; i < _children.Length - 1; i++)
+            {
+                _children[i].NextSibling = _children[i + 1];
+            }
         }
 
         /// <inheritdoc />
         public void AddNode(Node node)
         {
             node.Parent = this;
+            if (_children.Length > 0)
+            {
+                _children[_children.Length - 1].NextSibling = node;
+            }
             _children.Add(node);
         }
 
@@ -521,6 +515,11 @@ namespace AngleSharp.Dom
         {
             node.Parent = null;
             _children.RemoveAt(index);
+
+            for (int i = index > 0 ? index - 1 : index; i < _children.Length - 1; i++)
+            {
+                _children[i].NextSibling = _children[i + 1];
+            }
         }
 
         /// <inheritdoc />
